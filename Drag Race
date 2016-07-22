@@ -1,1 +1,190 @@
+package com.aide.trainer.mylibgdxgame;
 
+import com.badlogic.gdx.*;
+import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.g2d.*;
+import com.badlogic.gdx.math.*;
+import com.badlogic.gdx.audio.*;
+import com.badlogic.gdx.assets.loaders.*;
+import com.badlogic.gdx.Input.Keys;
+
+public class MyGdxGame implements ApplicationListener, InputProcessor
+{
+
+	
+	
+    SpriteBatch batch;
+	OrthographicCamera camera;
+	String state = "opening", str;
+	String[] car = {};
+	int money = 999999;
+	Animation setmenu;
+	boolean back = false;
+	Texture opening, menu, ng, cont, golf, settings;
+	Music theme;
+	BitmapFont font;
+	InputProcessor inp;
+	long time;
+	float deltatime=0;
+	Vector3 vec;
+    @Override
+    public void create()
+	{
+        Gdx.input.setCatchBackKey(true);
+		camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        batch = new SpriteBatch();
+		font=new BitmapFont(Gdx.files.internal("font.fnt"), false);
+		generate("opening");
+	}
+
+    @Override
+    public void render()
+	{
+		deltatime+=Gdx.graphics.getDeltaTime();
+		Gdx.gl.glClearColor(1, 1, 1, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+		vec=new Vector3(Gdx.input.getX(),Gdx.graphics.getHeight()-Gdx.input.getY(),0);
+		//if(Gdx.input.justTouched()==true && inp.keyDown(Keys.BACK)==true) back=true;
+        batch.begin();
+        if(state=="opening"){opening();}
+		if(state=="menu"){menu();}
+		if(state=="gamemenu"){gamemenu();}
+		if(state=="settings"){settings();}
+		font.draw(batch, Boolean.toString(back), 10, 40);
+		batch.end();
+	}
+	
+	public void generate(String key) {
+		if(key=="opening") {
+			time = System.currentTimeMillis();
+			opening = new Texture(Gdx.files.internal("start.png"));
+		}
+		if(key=="menu") {
+			menu = new Texture(Gdx.files.internal("menu.png"));
+			theme = Gdx.audio.newMusic(Gdx.files.internal("theme.mid"));
+			theme.setLooping(true);
+			theme.setVolume(1000);
+			font.scale(1);
+			ng=new Texture (Gdx.files.internal("ng.png"));
+			cont=new Texture (Gdx.files.internal("cont.png"));
+			settings=new Texture (Gdx.files.internal("settings.png"));
+			
+		}
+		if(key=="ng") {
+			str="new game";
+		}
+		if(key=="cont") {
+			str="continue";
+		}
+		if(key=="settings") {
+			Texture psetmenu = new Texture(Gdx.files.internal("setmenu.png"));
+			TextureRegion[][] rsetmenu= TextureRegion.split(psetmenu, 45, 80);
+			TextureRegion[] ksetmenu = {rsetmenu[0][0], rsetmenu[0][1], rsetmenu[0][2]};
+			setmenu = new Animation(0.055f, ksetmenu);
+		}
+	}
+    public void opening() {
+		if((System.currentTimeMillis()-time)<=2000) {
+			batch.draw(opening, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		}
+		else {state="menu"; generate("menu");}
+	} 
+	public void menu() {
+		batch.draw(menu, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		if(theme.isPlaying()==false)theme.play();
+		batch.draw(ng, (Gdx.graphics.getWidth()/2)-175, 600, 350, 60);
+		if(istouched((Gdx.graphics.getWidth()/2)-175, 600, 350, 60)==true){ state="gamemenu"; theme.stop(); generate("ng");}
+		batch.draw(cont, (Gdx.graphics.getWidth()/2)-175, 500, 350, 60);
+		if(istouched((Gdx.graphics.getWidth()/2)-175, 500, 350, 60)==true){ state="gamemenu"; theme.stop(); generate("cont"); load();}
+		batch.draw(settings, (Gdx.graphics.getWidth()/2)-175, 400, 350, 60);
+		if(istouched((Gdx.graphics.getWidth()/2)-175, 400, 350, 60)==true){ state="settings"; generate("settings");}
+	}
+	public void settings() {
+		batch.draw(setmenu.getKeyFrame(deltatime, true), 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		
+	}
+	public void gamemenu() {
+		font.draw(batch, str, (Gdx.graphics.getWidth()/2)-150, (Gdx.graphics.getHeight()/2)-30);
+		font.draw(batch, Integer.toString(money)+" $", Gdx.graphics.getWidth()-215, Gdx.graphics.getHeight()-30);
+	}
+	public boolean istouched(int x, int y, int m, int n) {
+		if(vec.x>x&&vec.x<x+m&&vec.y>y&&vec.y<y+n) {return true;}
+		return false;
+	}
+	public void load() {
+		
+	}
+
+	@Override
+    public void dispose()
+	{
+        batch.dispose();
+    }
+
+    @Override
+    public void resize(int width, int height)
+	{
+    }
+
+    @Override
+    public void pause()
+	{
+    }
+
+    @Override
+    public void resume()
+	{
+    }
+	@Override
+	public boolean keyDown(int keyCode)
+	{
+		if(keyCode==Keys.BACKSPACE) {back = true;}
+		return false;
+	}
+
+	@Override
+	public boolean keyUp(int p1)
+	{
+		if(p1==Keys.BACK) {back = true;}
+		return false;
+	}
+
+	@Override
+	public boolean keyTyped(char p1)
+	{
+		if(p1==Keys.BACK) {back = true;}
+		return false;
+	}
+
+	@Override
+	public boolean touchDown(int p1, int p2, int p3, int p4)
+	{
+		if(p1==Keys.BACK) {back = true;}
+		return false;
+	}
+
+	@Override
+	public boolean touchUp(int p1, int p2, int p3, int p4)
+	{
+		return false;
+	}
+
+	@Override
+	public boolean touchDragged(int p1, int p2, int p3)
+	{
+		return false;
+	}
+
+	@Override
+	public boolean mouseMoved(int p1, int p2)
+	{
+		return false;
+	}
+
+	@Override
+	public boolean scrolled(int p1)
+	{
+		return false;
+	}
+}
